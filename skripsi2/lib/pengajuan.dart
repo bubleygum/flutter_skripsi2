@@ -7,6 +7,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:skripsi2/home.dart';
+import 'package:skripsi2/marketplace.dart';
 
 class pengajuanScreen extends StatefulWidget {
   final String id;
@@ -24,6 +26,7 @@ class pengajuanScreenState extends State<pengajuanScreen> {
   final TextEditingController jumlahPengajuan = TextEditingController();
   final TextEditingController lamaCicilan = TextEditingController();
   final TextEditingController jumlahCont = TextEditingController();
+  int _currentIndex = 2;
   double totalBunga = 0;
   double angsuranBunga = 0;
   int selectedJangkaWaktu = 1;
@@ -53,9 +56,6 @@ class pengajuanScreenState extends State<pengajuanScreen> {
               (jsonData['data'] as List<dynamic>).cast<Map<String, dynamic>>();
         });
       } 
-      // else {
-      //   print(jsonData['message']);
-      // }
     }
   }
 
@@ -162,7 +162,6 @@ class pengajuanScreenState extends State<pengajuanScreen> {
   Future<void> uploadImageToServer(
       Uint8List? bytes, BuildContext context) async {
     if (bytes == null) {
-      // print('Error: Image bytes are null.');
       return;
     }
     var request = http.MultipartRequest(
@@ -281,12 +280,6 @@ class pengajuanScreenState extends State<pengajuanScreen> {
           'Content-Type': 'application/json; charset=UTF-8',
         },
       );
-
-      if (response.statusCode == 200) {
-        // print('Email sent successfully');
-      } else {
-        // print('Failed to send email. Status code: ${response.statusCode}');
-      }
     } catch (e) {
       // print('Error sending email: $e');
     }
@@ -468,6 +461,55 @@ class pengajuanScreenState extends State<pengajuanScreen> {
             ),
           ],
         ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+
+          if (index == 0) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => homeScreen(
+                        id: id,
+                      )),
+            );
+          } else if (index == 1) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => marketplaceScreen(
+                        id: id,
+                      )),
+            );
+          } else if (index == 2) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => pengajuanScreen(
+                        id: id,
+                      )),
+            );
+          }
+        },
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Beranda',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.store),
+            label: 'Marketplace',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.attach_money),
+            label: 'Pengajuan',
+          ),
+        ],
+        selectedItemColor: Colors.green,
       ),
     );
   }

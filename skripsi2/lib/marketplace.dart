@@ -47,11 +47,6 @@ class marketplaceScreenState extends State<marketplaceScreen> {
   }
 
   Future<void> getUserData() async {
-    // if (id.isEmpty) {
-    //   print('Here Error: No id parameter provided.');
-    //   return;
-    // }
-    // print("id" + id);
     final response = await http.post(
         Uri.parse('http://192.168.1.75/getDataAnggota.php'),
         body: {'id': id});
@@ -165,14 +160,11 @@ class marketplaceScreenState extends State<marketplaceScreen> {
                     setState(() {
                       selectedCategory = category['idKategori'];
                     });
-                    // print('Chosen category: ${category['idKategori']}');
                     if (category['idKategori'] == '') {
-                      // Show all products when "All" category is selected
                       getProductsData();
                       errorMessage = null;
                     } else {
                       final String categoryId = category['idKategori'];
-                      // print(categoryId);
                       try {
                         final products =
                             await getProductFromCategory(categoryId);
@@ -192,7 +184,6 @@ class marketplaceScreenState extends State<marketplaceScreen> {
                           productsData = [];
                           errorMessage = 'no product in this category';
                         });
-                        // print('Error: $e');
                       }
                     }
                     Navigator.pop(context);
@@ -217,7 +208,6 @@ class marketplaceScreenState extends State<marketplaceScreen> {
         final iuranValue = double.tryParse(jsonData['data']['iuran']) ?? 0.0;
         setState(() {
           iuran = iuranValue;
-          // print(iuran);
         });
       } else {
         // print(jsonData['message']);
@@ -351,7 +341,7 @@ class marketplaceScreenState extends State<marketplaceScreen> {
               else
                 GridView.count(
                   shrinkWrap: true,
-                  crossAxisCount: MediaQuery.of(context).size.width ~/ 150,
+                  crossAxisCount: MediaQuery.of(context).size.width ~/ 160,
                   childAspectRatio: 0.5,
                   mainAxisSpacing: 5,
                   crossAxisSpacing: 5,
@@ -391,10 +381,10 @@ class marketplaceScreenState extends State<marketplaceScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      product['namaProduk'],
+                                      product['namaProduk'].split(' ').take(6).join(' '),
                                       style: const TextStyle(
                                         fontWeight: FontWeight.bold,
-                                        fontSize: 16,
+                                        fontSize: 14,
                                       ),
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
@@ -403,7 +393,7 @@ class marketplaceScreenState extends State<marketplaceScreen> {
                                     Text(
                                       formatAmount(product['harga']),
                                       style: const TextStyle(
-                                        fontSize: 15,
+                                        fontSize: 12,
                                       ),
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,

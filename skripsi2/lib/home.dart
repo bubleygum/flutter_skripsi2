@@ -77,7 +77,7 @@ class homeScreenState extends State<homeScreen> {
           actions: <Widget>[
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(true); 
+                Navigator.of(context).pop(true);
               },
               child: const Text('Yes'),
             ),
@@ -97,8 +97,8 @@ class homeScreenState extends State<homeScreen> {
       await prefs.remove('idAnggota');
       await prefs.remove('email');
       BlocProvider.of<AuthBloc>(context).add(AuthEvent.logout);
-      Navigator.of(context)
-          .pushReplacement(MaterialPageRoute(builder: (context) => const login()));
+      Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const login()));
     }
   }
 
@@ -129,7 +129,7 @@ class homeScreenState extends State<homeScreen> {
     double screenWidth = MediaQuery.of(context).size.width;
     double boxWidth = screenWidth - 10;
     String userName = (userData != null && userData!.isNotEmpty)
-        ? userData![0]['nama']
+        ? userData![0]['nama'].split(' ')[0]
         : 'Loading...';
     return Scaffold(
       appBar: AppBar(
@@ -240,7 +240,11 @@ class homeScreenState extends State<homeScreen> {
                                             userPengajuan!['lamaPinjaman'] !=
                                                 null &&
                                             userPengajuan!['bunga'] != null)
-                                        ? formatAmount(double.parse(userPengajuan!['jumlahPengajuan']) + (double.parse(userPengajuan!['bunga'])))
+                                        ? formatAmount(double.parse(
+                                                userPengajuan![
+                                                    'jumlahPengajuan']) +
+                                            (double.parse(
+                                                userPengajuan!['bunga'])))
                                         : 'Tidak ada pengajuan aktif',
                                     style: const TextStyle(
                                       fontSize: 15,
@@ -285,13 +289,7 @@ class homeScreenState extends State<homeScreen> {
                                   vertical: 8, horizontal: 12),
                               child: Center(
                                 child: Text(
-                                  'Sisa Cicilan: ${(userPengajuan != null &&
-                                              userPengajuan!['lamaPinjaman'] !=
-                                                  null &&
-                                              userPengajuan!['pembayaran'] !=
-                                                  null)
-                                          ? '${(int.parse(userPengajuan!['lamaPinjaman']) - (userPengajuan!['pembayaran'] as List).length)}x: ${formatAmount(userPengajuan?["sisa"])}'
-                                          : 'Tidak ada pengajuan aktif'}',
+                                  'Sisa Cicilan: ${(userPengajuan != null && userPengajuan!['lamaPinjaman'] != null && userPengajuan!['pembayaran'] != null) ? '${(int.parse(userPengajuan!['lamaPinjaman']) - (userPengajuan!['pembayaran'] as List).length)}x: ${formatAmount(userPengajuan?["sisa"])}' : 'Tidak ada pengajuan aktif'}',
                                   style: const TextStyle(
                                     fontSize: 15,
                                     color: Colors.black,
@@ -359,8 +357,7 @@ class homeScreenState extends State<homeScreen> {
                                             'Cicilan ${index + 1}',
                                             style: TextStyle(
                                               fontWeight: FontWeight.normal,
-                                              color:
-                                                  cicilanColor,
+                                              color: cicilanColor,
                                               fontSize: 15,
                                             ),
                                           ),

@@ -14,7 +14,7 @@ class login extends StatelessWidget {
     return Scaffold(
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(24.0), 
+          padding: const EdgeInsets.all(24.0),
           child: BlocProvider(
             create: (context) => AuthBloc(),
             child: const loginForm(),
@@ -29,7 +29,6 @@ class loginForm extends StatefulWidget {
   const loginForm({super.key});
 
   @override
-  // ignore: library_private_types_in_public_api
   loginFormState createState() => loginFormState();
 }
 
@@ -60,13 +59,11 @@ class loginFormState extends State<loginForm> {
             await prefs.setBool('isLoggedIn', true);
             await prefs.setString('idAnggota', data["idAnggota"].toString());
             final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
-            String? idAnggota = data['data'][0]['idAnggota'];
-
-            await prefs.setString('idAnggota', idAnggota ?? '');
-
-            if (isLoggedIn) {
+            String idAnggota = data['data'][0]['idAnggota'].toString();
+            await prefs.setString('idAnggota', idAnggota);
+            if (prefs.getBool('isLoggedIn') ?? false) {
               Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => homeScreen(id: idAnggota ?? '')));
+                  builder: (context) => homeScreen(id: idAnggota)));
             }
             BlocProvider.of<AuthBloc>(context).add(AuthEvent.login);
           } else {
@@ -112,7 +109,7 @@ class loginFormState extends State<loginForm> {
           }
         }
       } catch (error) {
-        // print('Error: $error');
+        print('Error: $error');
       }
     }
   }
@@ -151,10 +148,8 @@ class loginFormState extends State<loginForm> {
                   textAlign: TextAlign.left,
                 ),
               ),
-              const SizedBox(
-                  height: 8.0), 
+              const SizedBox(height: 8.0),
               TextFormField(
-                // key: const Key('emailTextField'),
                 controller: emailCont,
                 decoration: InputDecoration(
                   hintText: 'Enter your email',
@@ -166,9 +161,8 @@ class loginFormState extends State<loginForm> {
                   ),
                   filled: true,
                   fillColor: const Color.fromRGBO(240, 240, 240, 1),
-                  contentPadding: const EdgeInsets.symmetric(
-                      vertical: 12,
-                      horizontal: 16),
+                  contentPadding:
+                      const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                 ),
                 validator: validateField,
                 onSaved: (value) {
@@ -185,23 +179,20 @@ class loginFormState extends State<loginForm> {
                   textAlign: TextAlign.left,
                 ),
               ),
-              const SizedBox(
-                  height: 8.0),
+              const SizedBox(height: 8.0),
               TextFormField(
-                // key: const Key('passwordTextField'),
                 controller: passCont,
                 decoration: InputDecoration(
                   hintText: 'Password',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(25.0),
-                    borderSide:
-                        const BorderSide(color: Color.fromRGBO(240, 240, 240, 1)),
+                    borderSide: const BorderSide(
+                        color: Color.fromRGBO(240, 240, 240, 1)),
                   ),
                   filled: true,
                   fillColor: const Color.fromRGBO(240, 240, 240, 1),
-                  contentPadding: const EdgeInsets.symmetric(
-                      vertical: 12,
-                      horizontal: 16),
+                  contentPadding:
+                      const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                   suffixIcon: IconButton(
                     icon: Icon(
                       Icons.remove_red_eye,
@@ -222,12 +213,11 @@ class loginFormState extends State<loginForm> {
               ),
             ],
           ),
-          const SizedBox(height: 24.0), 
+          const SizedBox(height: 24.0),
           SizedBox(
             height: 48.0,
             width: double.infinity,
             child: ElevatedButton(
-              // key: const Key('loginButton'),
               onPressed: () {
                 loginUser();
               },

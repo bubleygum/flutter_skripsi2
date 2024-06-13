@@ -154,6 +154,7 @@ class prodDetailScreenState extends State<prodDetailScreen> {
 
                 if (response.statusCode == 200) {
                   final data = jsonDecode(response.body);
+                  print('Response data: $data');
                   if (data['success']) {
                     sendEmailNotification();
                     showDialog(
@@ -328,7 +329,7 @@ class prodDetailScreenState extends State<prodDetailScreen> {
       body: productsData == null
           ? const Center(child: CircularProgressIndicator())
           : Padding(
-              padding: const EdgeInsets.all(8.0), 
+              padding: const EdgeInsets.all(8.0),
               child: ListView.builder(
                 itemCount: productsData!.length,
                 itemBuilder: (context, index) {
@@ -346,19 +347,18 @@ class prodDetailScreenState extends State<prodDetailScreen> {
                           enableInfiniteScroll: true,
                         ),
                         items: imgNames.map<Widget>((imgName) {
-                              return Container(
-                                margin: const EdgeInsets.all(5.0),
-                                child: Image.memory(
-                                  base64Decode(imgName),
-                                  height: 100,
-                                  fit: BoxFit.cover,
-                                ),
-                              );
-                            }).toList(),
+                          return Container(
+                            margin: const EdgeInsets.all(5.0),
+                            child: Image.memory(
+                              base64Decode(imgName),
+                              height: 100,
+                              fit: BoxFit.cover,
+                            ),
+                          );
+                        }).toList(),
                       ),
                       Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 8.0), 
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
                         child: Text(
                           product['namaProduk'],
                           style: const TextStyle(
@@ -366,11 +366,18 @@ class prodDetailScreenState extends State<prodDetailScreen> {
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 8.0), 
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
                         child: Text(
                           'Harga: ${formatAmount(product['harga'])}',
                           style: const TextStyle(fontSize: 16),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: Text(
+                          product['deskripsi'],
+                          style:
+                              const TextStyle(fontSize: 12),
                         ),
                       ),
                       Padding(
@@ -449,8 +456,7 @@ class prodDetailScreenState extends State<prodDetailScreen> {
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 8.0),
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
                         child: ElevatedButton(
                           onPressed: () {
                             if (userData != null &&
@@ -471,7 +477,10 @@ class prodDetailScreenState extends State<prodDetailScreen> {
                             ),
                             minimumSize: const Size(double.infinity, 40),
                           ),
-                          child: const Text('Buy Now',style: TextStyle(fontSize: 15,color: Colors.white),),
+                          child: const Text(
+                            'Buy Now',
+                            style: TextStyle(fontSize: 15, color: Colors.white),
+                          ),
                         ),
                       ),
                     ],
