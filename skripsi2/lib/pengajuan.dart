@@ -46,7 +46,7 @@ class pengajuanScreenState extends State<pengajuanScreen> {
 
   Future<void> getUserData() async {
     final response = await http.post(
-        Uri.parse('http://192.168.1.75/getDataAnggota.php'),
+        Uri.parse('http://172.22.74.201/getDataAnggota.php'),
         body: {'id': id});
     if (response.statusCode == 200) {
       final jsonData = jsonDecode(response.body);
@@ -55,7 +55,7 @@ class pengajuanScreenState extends State<pengajuanScreen> {
           userData =
               (jsonData['data'] as List<dynamic>).cast<Map<String, dynamic>>();
         });
-      } 
+      }
     }
   }
 
@@ -63,7 +63,7 @@ class pengajuanScreenState extends State<pengajuanScreen> {
 
   Future<void> getIuran() async {
     final response = await http.post(
-      Uri.parse('http://192.168.1.75/iuran.php'),
+      Uri.parse('http://172.22.74.201/iuran.php'),
     );
 
     if (response.statusCode == 200) {
@@ -73,11 +73,11 @@ class pengajuanScreenState extends State<pengajuanScreen> {
         setState(() {
           iuran = iuranValue;
         });
-      } 
+      }
       // else {
       //   print(jsonData['message']);
       // }
-    } 
+    }
     // else {
     //   print('Failed to fetch data. Status code: ${response.statusCode}');
     // }
@@ -86,7 +86,7 @@ class pengajuanScreenState extends State<pengajuanScreen> {
   int maxLamaCicilan = 0;
 
   Future<void> getMaxLama() async {
-    var url = Uri.parse('http://192.168.1.75/pengajuan.php');
+    var url = Uri.parse('http://172.22.74.201/pengajuan.php');
     var response = await http.post(url, body: {
       'req': 'getMaxLama',
     });
@@ -102,11 +102,11 @@ class pengajuanScreenState extends State<pengajuanScreen> {
         } else {
           // print('maxLamaCicilanVal is null');
         }
-      } 
+      }
       // else {
       //   print(jsonData['message']);
       // }
-    } 
+    }
     // else {
     //   print('Failed to fetch data. Status code: ${response.statusCode}');
     // }
@@ -166,7 +166,7 @@ class pengajuanScreenState extends State<pengajuanScreen> {
     }
     var request = http.MultipartRequest(
       'POST',
-      Uri.parse('http://192.168.1.75/pengajuan.php'),
+      Uri.parse('http://172.22.74.201/pengajuan.php'),
     );
     request.fields['req'] = "upload";
     request.fields['idAnggota'] = id;
@@ -271,7 +271,7 @@ class pengajuanScreenState extends State<pengajuanScreen> {
   }
 
   Future<void> sendEmailNotification() async {
-    const String apiUrl = 'http://192.168.1.75/sendEmail.php';
+    const String apiUrl = 'http://172.22.74.201/sendEmail.php';
 
     try {
       final response = await http.post(
@@ -282,6 +282,28 @@ class pengajuanScreenState extends State<pengajuanScreen> {
       );
     } catch (e) {
       // print('Error sending email: $e');
+    }
+  }
+
+  String formatAmount(dynamic amount) {
+    if (amount is String) {
+      amount = double.tryParse(amount);
+    }
+    if (amount != null) {
+      String formattedAmount = amount.toStringAsFixed(2);
+      List<String> parts = formattedAmount.split('.');
+      String integerPart = parts[0];
+      String fractionalPart = parts.length > 1 ? '.${parts[1]}' : '';
+      String formattedIntegerPart = '';
+      for (int i = integerPart.length - 1; i >= 0; i--) {
+        formattedIntegerPart = integerPart[i] + formattedIntegerPart;
+        if ((integerPart.length - i) % 3 == 0 && i != 0) {
+          formattedIntegerPart = '.$formattedIntegerPart';
+        }
+      }
+      return 'Rp.$formattedIntegerPart${fractionalPart == '.00' ? '' : fractionalPart}';
+    } else {
+      return 'Tidak ada pengajuan aktif';
     }
   }
 
@@ -302,164 +324,173 @@ class pengajuanScreenState extends State<pengajuanScreen> {
           style: TextStyle(color: Colors.black),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: () {
-                downloadPDF();
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+      body: PopScope(
+        canPop: false,
+        onPopInvoked: (bool didPop) async {
+          if (didPop) {
+            return;
+          }
+          Navigator.pop(context);
+        },
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: () {
+                  downloadPDF();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  minimumSize: const Size(double.infinity, 40),
                 ),
-                minimumSize: const Size(double.infinity, 40),
-              ),
-              child: const Text(
-                'Download Formulir Pengajuan',
-                style: TextStyle(fontSize: 15, color: Colors.white),
-              ),
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              'Pengajuan',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-              ),
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: jumlahCont,
-              style: const TextStyle(fontSize: 15, height: 1.5),
-              keyboardType: TextInputType.number,
-              inputFormatters: <TextInputFormatter>[
-                FilteringTextInputFormatter.digitsOnly
-              ],
-              decoration: InputDecoration(
-                hintText: 'Jumlah Pinjaman',
-                hintStyle: const TextStyle(fontSize: 15),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
+                child: const Text(
+                  'Download Formulir Pengajuan',
+                  style: TextStyle(fontSize: 15, color: Colors.white),
                 ),
-                contentPadding:
-                    const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
               ),
-              onChanged: (value) {
-                simulasi();
-              },
-            ),
-            const SizedBox(height: 10),
-            DropdownButtonFormField<int>(
-              value: selectedJangkaWaktu,
-              onChanged: (int? newValue) {
-                setState(() {
-                  selectedJangkaWaktu = newValue!;
+              const SizedBox(height: 20),
+              const Text(
+                'Pengajuan',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: jumlahCont,
+                style: const TextStyle(fontSize: 15, height: 1.5),
+                keyboardType: TextInputType.number,
+                inputFormatters: <TextInputFormatter>[
+                  FilteringTextInputFormatter.digitsOnly
+                ],
+                decoration: InputDecoration(
+                  hintText: 'Jumlah Pinjaman',
+                  hintStyle: const TextStyle(fontSize: 15),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  contentPadding:
+                      const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                ),
+                onChanged: (value) {
                   simulasi();
-                });
-              },
-              items: List.generate(maxLamaCicilan, (index) => index + 1)
-                  .map<DropdownMenuItem<int>>((int value) {
-                return DropdownMenuItem<int>(
-                  value: value,
-                  child: Text('$value bulan'),
-                );
-              }).toList(),
-              decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                contentPadding:
-                    const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                },
               ),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              'Bunga saat ini: $iuran%',
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 15,
-              ),
-            ),
-            const SizedBox(height: 10),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: angsuranDetails.map((detail) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Angsuran ke-${detail['bulan']}',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    const SizedBox(height: 5),
-                    Text(
-                      'Total Angsuran: Rp. ${detail['totalAngsuran'].toStringAsFixed(2)}',
-                      style: const TextStyle(fontSize: 14),
-                    ),
-                    Text(
-                      'Angsuran Bunga: Rp. ${detail['angsuranBunga'].toStringAsFixed(2)}',
-                      style: const TextStyle(fontSize: 14),
-                    ),
-                    Text(
-                      'Angsuran Pokok: Rp. ${detail['angsuranPokok'].toStringAsFixed(2)}',
-                      style: const TextStyle(fontSize: 14),
-                    ),
-                    Text(
-                      'Saldo Pinjaman: Rp. ${detail['saldoPinjaman'].toStringAsFixed(2)}',
-                      style: const TextStyle(fontSize: 14),
-                    ),
-                    const SizedBox(height: 10),
-                  ],
-                );
-              }).toList(),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                if (jumlahCont.text.isEmpty) {
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: const Text('Error'),
-                        content: const Text(
-                            'Tidak dapat mengupload formulir, isi data terlebih dahulu'),
-                        actions: [
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                            child: const Text('OK'),
-                          ),
-                        ],
-                      );
-                    },
+              const SizedBox(height: 10),
+              DropdownButtonFormField<int>(
+                value: selectedJangkaWaktu,
+                onChanged: (int? newValue) {
+                  setState(() {
+                    selectedJangkaWaktu = newValue!;
+                    simulasi();
+                  });
+                },
+                items: List.generate(maxLamaCicilan, (index) => index + 1)
+                    .map<DropdownMenuItem<int>>((int value) {
+                  return DropdownMenuItem<int>(
+                    value: value,
+                    child: Text('$value bulan'),
                   );
-                  return;
-                } else {
-                  uploadButtonPressed();
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                }).toList(),
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  contentPadding:
+                      const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
                 ),
-                minimumSize: const Size(double.infinity, 40),
               ),
-              child: const Text(
-                'Upload Formulir Pengajuan',
-                style: TextStyle(fontSize: 15, color: Colors.white),
+              const SizedBox(height: 10),
+              Text(
+                'Bunga saat ini: $iuran%',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                ),
               ),
-            ),
-          ],
+              const SizedBox(height: 10),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: angsuranDetails.map((detail) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Angsuran ke-${detail['bulan']}',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      Text(
+                        'Total Angsuran: ${formatAmount(detail['totalAngsuran'])}',
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                      Text(
+                        'Angsuran Bunga:${formatAmount(detail['angsuranBunga'])}',
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                      Text(
+                        'Angsuran Pokok: ${formatAmount(detail['angsuranPokok'])}',
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                      Text(
+                        'Sisa Pinjaman: ${formatAmount(detail['saldoPinjaman'])}',
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                      const SizedBox(height: 10),
+                    ],
+                  );
+                }).toList(),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  if (jumlahCont.text.isEmpty) {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: const Text('Error'),
+                          content: const Text(
+                              'Tidak dapat mengupload formulir, isi data terlebih dahulu'),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text('OK'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                    return;
+                  } else {
+                    uploadButtonPressed();
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  minimumSize: const Size(double.infinity, 40),
+                ),
+                child: const Text(
+                  'Upload Formulir Pengajuan',
+                  style: TextStyle(fontSize: 15, color: Colors.white),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(

@@ -38,7 +38,7 @@ class homeScreenState extends State<homeScreen> {
 
   Future<void> getUserData() async {
     final response = await http.post(
-        Uri.parse('http://192.168.1.75/getDataAnggota.php'),
+        Uri.parse('http://172.22.74.201/getDataAnggota.php'),
         body: {'id': id});
     if (response.statusCode == 200) {
       final jsonData = jsonDecode(response.body);
@@ -53,7 +53,7 @@ class homeScreenState extends State<homeScreen> {
 
   Future<void> getPengajuan() async {
     final response = await http.post(
-        Uri.parse('http://192.168.1.75/getPengajuan.php'),
+        Uri.parse('http://172.22.74.201/getPengajuan.php'),
         body: {'id': id});
     if (response.statusCode == 200) {
       final jsonData = jsonDecode(response.body);
@@ -169,29 +169,168 @@ class homeScreenState extends State<homeScreen> {
         ],
       ),
       body: userData != null && userPengajuan != null
-          ? SingleChildScrollView(
-              child: Column(
-                children: [
-                  const Align(
-                    alignment: Alignment.centerLeft,
-                    child: Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Text(
-                        'DATA PINJAMAN',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
+          ? PopScope(
+              canPop: false,
+              onPopInvoked: (didPop) async {
+                if (didPop) {
+                  return;
+                }
+                logout(context);
+              },
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    const Align(
+                      alignment: Alignment.centerLeft,
+                      child: Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Text(
+                          'DATA PINJAMAN',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                  Align(
-                    alignment: Alignment.topCenter,
-                    child: Container(
+                    const SizedBox(height: 10),
+                    Align(
+                      alignment: Alignment.topCenter,
+                      child: Container(
+                        width: boxWidth,
+                        decoration: BoxDecoration(
+                          color: Colors.green,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    formatAmount(
+                                      userPengajuan?['jumlahPengajuan'] ??
+                                          'Tidak ada pengajuan aktif',
+                                    ),
+                                    style: const TextStyle(
+                                      fontSize: 30,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    '${userPengajuan?['tglPinjaman'] ?? 'Tidak ada pengajuan aktif'}',
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.normal,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                              Text.rich(
+                                TextSpan(
+                                  children: <TextSpan>[
+                                    const TextSpan(
+                                      text: 'Total Pinjaman: ',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.normal,
+                                        color: Colors.white,
+                                        fontSize: 15,
+                                      ),
+                                    ),
+                                    TextSpan(
+                                      text: (userPengajuan != null &&
+                                              userPengajuan!['lamaPinjaman'] !=
+                                                  null &&
+                                              userPengajuan!['bunga'] != null)
+                                          ? formatAmount(double.parse(
+                                                  userPengajuan![
+                                                      'jumlahPengajuan']) +
+                                              (double.parse(
+                                                  userPengajuan!['bunga'])))
+                                          : 'Tidak ada pengajuan aktif',
+                                      style: const TextStyle(
+                                        fontSize: 15,
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.normal,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              Text.rich(
+                                TextSpan(
+                                  children: <TextSpan>[
+                                    const TextSpan(
+                                      text: 'Jumlah Cicilan: ',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.normal,
+                                        color: Colors.white,
+                                        fontSize: 15,
+                                      ),
+                                    ),
+                                    TextSpan(
+                                      text:
+                                          '${userPengajuan?['lamaPinjaman'] + " (Cicilan:${formatAmount((double.parse(userPengajuan!['jumlahPengajuan']) + (double.parse(userPengajuan!['bunga']))) / 12)})" ?? 'Tidak ada pengajuan aktif'}',
+                                      style: const TextStyle(
+                                        fontSize: 15,
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.normal,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.yellow[50],
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 8, horizontal: 12),
+                                child: Center(
+                                  child: Text(
+                                    'Sisa Cicilan: ${(userPengajuan != null && userPengajuan!['lamaPinjaman'] != null && userPengajuan!['pembayaran'] != null) ? '${(int.parse(userPengajuan!['lamaPinjaman']) - (userPengajuan!['pembayaran'] as List).length)}x: ${formatAmount(userPengajuan?["sisa"])}' : 'Tidak ada pengajuan aktif'}',
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.normal,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    const Align(
+                      alignment: Alignment.centerLeft,
+                      child: Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Text(
+                          'Pembayaran Cicilan',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Container(
                       width: boxWidth,
                       decoration: BoxDecoration(
-                        color: Colors.green,
+                        color: Colors.grey[200],
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Padding(
@@ -199,216 +338,87 @@ class homeScreenState extends State<homeScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  formatAmount(
-                                    userPengajuan?['jumlahPengajuan'] ??
-                                        'Tidak ada pengajuan aktif',
-                                  ),
-                                  style: const TextStyle(
-                                    fontSize: 30,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                Text(
-                                  '${userPengajuan?['tglPinjaman'] ?? 'Tidak ada pengajuan aktif'}',
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.normal,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 10),
-                            Text.rich(
-                              TextSpan(
-                                children: <TextSpan>[
-                                  const TextSpan(
-                                    text: 'Total Pinjaman: ',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.normal,
-                                      color: Colors.white,
-                                      fontSize: 15,
+                            if (userPengajuan != null)
+                              ListView.builder(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount:
+                                    int.parse(userPengajuan!['lamaPinjaman']),
+                                itemBuilder: (context, index) {
+                                  var pembayaran = userPengajuan!['pembayaran'];
+                                  var cicilanData = pembayaran.length > index
+                                      ? pembayaran[index]
+                                      : null;
+
+                                  Color cicilanColor = cicilanData != null
+                                      ? Colors.green
+                                      : Colors.black;
+
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 4.0),
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          child: Align(
+                                            alignment: Alignment.centerLeft,
+                                            child: Text(
+                                              'Cicilan ${index + 1}',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.normal,
+                                                color: cicilanColor,
+                                                fontSize: 15,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        Expanded(
+                                          child: Align(
+                                            alignment: Alignment.center,
+                                            child: Text(
+                                              cicilanData != null
+                                                  ? formatAmount(
+                                                      cicilanData['cicilan'])
+                                                  : '',
+                                              style: const TextStyle(
+                                                fontSize: 15,
+                                                color: Colors.black,
+                                                fontWeight: FontWeight.normal,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        Expanded(
+                                          child: Align(
+                                            alignment: Alignment.centerRight,
+                                            child: Text(
+                                              cicilanData != null
+                                                  ? cicilanData['tglPembayaran']
+                                                  : '',
+                                              style: const TextStyle(
+                                                fontSize: 15,
+                                                color: Colors.black,
+                                                fontWeight: FontWeight.normal,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                  ),
-                                  TextSpan(
-                                    text: (userPengajuan != null &&
-                                            userPengajuan!['lamaPinjaman'] !=
-                                                null &&
-                                            userPengajuan!['bunga'] != null)
-                                        ? formatAmount(double.parse(
-                                                userPengajuan![
-                                                    'jumlahPengajuan']) +
-                                            (double.parse(
-                                                userPengajuan!['bunga'])))
-                                        : 'Tidak ada pengajuan aktif',
-                                    style: const TextStyle(
-                                      fontSize: 15,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.normal,
-                                    ),
-                                  ),
-                                ],
+                                  );
+                                },
+                              )
+                            else
+                              const Text(
+                                'Data pembayaran tidak tersedia',
+                                style: TextStyle(color: Colors.black),
                               ),
-                            ),
-                            const SizedBox(height: 10),
-                            Text.rich(
-                              TextSpan(
-                                children: <TextSpan>[
-                                  const TextSpan(
-                                    text: 'Jumlah Cicilan: ',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.normal,
-                                      color: Colors.white,
-                                      fontSize: 15,
-                                    ),
-                                  ),
-                                  TextSpan(
-                                    text:
-                                        '${userPengajuan?['lamaPinjaman'] + " (Cicilan:${formatAmount((double.parse(userPengajuan!['jumlahPengajuan']) + (double.parse(userPengajuan!['bunga']))) / 12)})" ?? 'Tidak ada pengajuan aktif'}',
-                                    style: const TextStyle(
-                                      fontSize: 15,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.normal,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            Container(
-                              decoration: BoxDecoration(
-                                color: Colors.yellow[50],
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 8, horizontal: 12),
-                              child: Center(
-                                child: Text(
-                                  'Sisa Cicilan: ${(userPengajuan != null && userPengajuan!['lamaPinjaman'] != null && userPengajuan!['pembayaran'] != null) ? '${(int.parse(userPengajuan!['lamaPinjaman']) - (userPengajuan!['pembayaran'] as List).length)}x: ${formatAmount(userPengajuan?["sisa"])}' : 'Tidak ada pengajuan aktif'}',
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.normal,
-                                  ),
-                                ),
-                              ),
-                            ),
                           ],
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  const Align(
-                    alignment: Alignment.centerLeft,
-                    child: Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Text(
-                        'Pembayaran Cicilan',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Container(
-                    width: boxWidth,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (userPengajuan != null)
-                            ListView.builder(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemCount:
-                                  int.parse(userPengajuan!['lamaPinjaman']),
-                              itemBuilder: (context, index) {
-                                var pembayaran = userPengajuan!['pembayaran'];
-                                var cicilanData = pembayaran.length > index
-                                    ? pembayaran[index]
-                                    : null;
-
-                                Color cicilanColor = cicilanData != null
-                                    ? Colors.green
-                                    : Colors.black;
-
-                                return Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 4.0),
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: Align(
-                                          alignment: Alignment.centerLeft,
-                                          child: Text(
-                                            'Cicilan ${index + 1}',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.normal,
-                                              color: cicilanColor,
-                                              fontSize: 15,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      Expanded(
-                                        child: Align(
-                                          alignment: Alignment.center,
-                                          child: Text(
-                                            cicilanData != null
-                                                ? formatAmount(
-                                                    cicilanData['cicilan'])
-                                                : '',
-                                            style: const TextStyle(
-                                              fontSize: 15,
-                                              color: Colors.black,
-                                              fontWeight: FontWeight.normal,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      Expanded(
-                                        child: Align(
-                                          alignment: Alignment.centerRight,
-                                          child: Text(
-                                            cicilanData != null
-                                                ? cicilanData['tglPembayaran']
-                                                : '',
-                                            style: const TextStyle(
-                                              fontSize: 15,
-                                              color: Colors.black,
-                                              fontWeight: FontWeight.normal,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
-                            )
-                          else
-                            const Text(
-                              'Data pembayaran tidak tersedia',
-                              style: TextStyle(color: Colors.black),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             )
           : SingleChildScrollView(

@@ -26,12 +26,8 @@ class notifScreenState extends State<notifScreen> {
   }
 
   Future<void> getNotif() async {
-    // if (id == null || id.isEmpty) {
-    //   print('Error: No id parameter provided.');
-    //   return;
-    // }
     final response = await http.post(
-      Uri.parse('http://192.168.1.75/getNotif.php'),
+      Uri.parse('http://172.22.74.201/getNotif.php'),
       body: {'id': id},
     );
     if (response.statusCode == 200) {
@@ -65,31 +61,41 @@ class notifScreenState extends State<notifScreen> {
         iconTheme: const IconThemeData(color: Colors.black),
       ),
       body: notifications != null
-          ? ListView.separated(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
-              itemCount: notifications!.length,
-              separatorBuilder: (context, index) => const Divider(),
-              itemBuilder: (context, index) {
-                final notification = notifications![index];
-                final date = DateTime.parse(notification['tanggal']);
-                final formattedDate = '${date.day}/${date.month}/${date.year}';
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: ListTile(
-                    title: Text(
-                      notification['notif'],
-                      style: const TextStyle(color: Colors.black),
-                    ),
-                    subtitle: Padding(
-                      padding: const EdgeInsets.only(top: 4.0),
-                      child: Text(
-                        formattedDate,
-                        style: const TextStyle(color: Colors.grey),
+          ? PopScope(
+              canPop: false,
+              onPopInvoked: (bool didPop) async {
+                if (didPop) {
+                  return;
+                }
+                Navigator.pop(context);
+              },
+              child: ListView.separated(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                itemCount: notifications!.length,
+                separatorBuilder: (context, index) => const Divider(),
+                itemBuilder: (context, index) {
+                  final notification = notifications![index];
+                  final date = DateTime.parse(notification['tanggal']);
+                  final formattedDate =
+                      '${date.day}/${date.month}/${date.year}';
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: ListTile(
+                      title: Text(
+                        notification['notif'],
+                        style: const TextStyle(color: Colors.black),
+                      ),
+                      subtitle: Padding(
+                        padding: const EdgeInsets.only(top: 4.0),
+                        child: Text(
+                          formattedDate,
+                          style: const TextStyle(color: Colors.grey),
+                        ),
                       ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             )
           : const Center(
               child: Text('Tidak ada notif'),

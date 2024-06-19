@@ -45,7 +45,7 @@ class loginFormState extends State<loginForm> {
   void loginUser() async {
     if (formKey.currentState!.validate()) {
       try {
-        var url = Uri.parse('http://192.168.1.75/login.php');
+        var url = Uri.parse('http://172.22.74.201/login.php');
         var response = await http.post(url, body: {
           'email': emailCont.text,
           'password': passCont.text,
@@ -128,6 +128,16 @@ class loginFormState extends State<loginForm> {
       autovalidateMode: AutovalidateMode.onUserInteraction,
       child: Column(
         children: <Widget>[
+          const SizedBox(height: 24.0),
+          const Align(
+            alignment: Alignment.center,
+            child: Text(
+              "Aplikasi Koperasi PT.Rutan",
+              style: TextStyle(
+                  fontSize: 20, color: Colors.black),
+              textAlign: TextAlign.left,
+            ),
+          ),
           const Align(
             alignment: Alignment.centerLeft,
             child: Text(

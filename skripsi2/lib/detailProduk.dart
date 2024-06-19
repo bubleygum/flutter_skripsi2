@@ -44,7 +44,7 @@ class prodDetailScreenState extends State<prodDetailScreen> {
       return;
     }
     final response = await http.post(
-        Uri.parse('http://192.168.1.75/getDataAnggota.php'),
+        Uri.parse('http://172.22.74.201/getDataAnggota.php'),
         body: {'id': id});
     if (response.statusCode == 200) {
       final jsonData = jsonDecode(response.body);
@@ -62,7 +62,7 @@ class prodDetailScreenState extends State<prodDetailScreen> {
   int maxLamaCicilan = 0;
 
   Future<void> getMaxLama() async {
-    var url = Uri.parse('http://192.168.1.75/pengajuan.php');
+    var url = Uri.parse('http://172.22.74.201/pengajuan.php');
     var response = await http.post(url, body: {
       'req': 'getMaxLama',
     });
@@ -88,9 +88,8 @@ class prodDetailScreenState extends State<prodDetailScreen> {
   }
 
   Future<void> getProdData() async {
-    // print("here");
     final response = await http.post(
-      Uri.parse('http://192.168.1.75/getProducts.php'),
+      Uri.parse('http://172.22.74.201/getProducts.php'),
       body: {'idProduk': idProduk},
     );
     if (response.statusCode == 200) {
@@ -104,7 +103,6 @@ class prodDetailScreenState extends State<prodDetailScreen> {
           final product = productsData![0];
           hitungCicilan(product['harga']);
         }
-        // print(productsData);
       } else {
         // print(data['message']);
       }
@@ -139,7 +137,7 @@ class prodDetailScreenState extends State<prodDetailScreen> {
               onPressed: () async {
                 Navigator.of(context).pop();
                 final response = await http.post(
-                  Uri.parse('http://192.168.1.75/pengajuan.php'),
+                  Uri.parse('http://172.22.74.201/pengajuan.php'),
                   body: {
                     'req': "market",
                     'idAnggota': id,
@@ -212,7 +210,7 @@ class prodDetailScreenState extends State<prodDetailScreen> {
 
   Future<void> getIuran() async {
     final response = await http.post(
-      Uri.parse('http://192.168.1.75/iuran.php'),
+      Uri.parse('http://172.22.74.201/iuran.php'),
     );
 
     if (response.statusCode == 200) {
@@ -221,7 +219,6 @@ class prodDetailScreenState extends State<prodDetailScreen> {
         final iuranValue = double.tryParse(jsonData['data']['iuran']) ?? 0.0;
         setState(() {
           iuran = iuranValue;
-          // print(iuran);
         });
       } else {
         // print(jsonData['message']);
@@ -267,7 +264,7 @@ class prodDetailScreenState extends State<prodDetailScreen> {
   }
 
   Future<void> sendEmailNotification() async {
-    const String apiUrl = 'http://192.168.1.75/sendEmail.php';
+    const String apiUrl = 'http://172.22.74.201/sendEmail.php';
 
     try {
       final response = await http.post(
@@ -277,11 +274,11 @@ class prodDetailScreenState extends State<prodDetailScreen> {
         },
       );
 
-      if (response.statusCode == 200) {
-        // print('Email sent successfully');
-      } else {
-        // print('Failed to send email. Status code: ${response.statusCode}');
-      }
+      // if (response.statusCode == 200) {
+      //   // print('Email sent successfully');
+      // } else {
+      //   // print('Failed to send email. Status code: ${response.statusCode}');
+      // }
     } catch (e) {
       // print('Error sending email: $e');
     }
@@ -326,168 +323,178 @@ class prodDetailScreenState extends State<prodDetailScreen> {
           style: TextStyle(color: Colors.black),
         ),
       ),
-      body: productsData == null
-          ? const Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: ListView.builder(
-                itemCount: productsData!.length,
-                itemBuilder: (context, index) {
-                  final product = productsData![index];
-                  List<String> imgNames =
-                      (product['imgNames'] as List<dynamic>).cast<String>();
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      CarouselSlider(
-                        options: CarouselOptions(
-                          aspectRatio: 16 / 9,
-                          enlargeCenterPage: true,
-                          autoPlay: true,
-                          enableInfiniteScroll: true,
-                        ),
-                        items: imgNames.map<Widget>((imgName) {
-                          return Container(
-                            margin: const EdgeInsets.all(5.0),
-                            child: Image.memory(
-                              base64Decode(imgName),
-                              height: 100,
-                              fit: BoxFit.cover,
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: Text(
-                          product['namaProduk'],
-                          style: const TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: Text(
-                          'Harga: ${formatAmount(product['harga'])}',
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: Text(
-                          product['deskripsi'],
-                          style:
-                              const TextStyle(fontSize: 12),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(5.0),
-                        child: DropdownButtonFormField<int>(
-                          value: selectedJangkaWaktu,
-                          onChanged: (int? newValue) {
-                            setState(() {
-                              selectedJangkaWaktu = newValue!;
-                              hitungCicilan(product['harga']);
-                            });
-                          },
-                          items: List.generate(
-                                  maxLamaCicilan, (index) => index + 1)
-                              .map<DropdownMenuItem<int>>((int value) {
-                            return DropdownMenuItem<int>(
-                              value: value,
-                              child: Text('$value bulan'),
+      body: PopScope(
+        canPop: false,
+        onPopInvoked: (bool didPop) async {
+          if (didPop) {
+            return;
+          }
+          Navigator.pop(context);
+        },
+        child: productsData == null
+            ? const Center(child: CircularProgressIndicator())
+            : Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: ListView.builder(
+                  itemCount: productsData!.length,
+                  itemBuilder: (context, index) {
+                    final product = productsData![index];
+                    List<String> imgNames =
+                        (product['imgNames'] as List<dynamic>).cast<String>();
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        CarouselSlider(
+                          options: CarouselOptions(
+                            aspectRatio: 16 / 9,
+                            enlargeCenterPage: true,
+                            autoPlay: true,
+                            enableInfiniteScroll: true,
+                          ),
+                          items: imgNames.map<Widget>((imgName) {
+                            return Container(
+                              margin: const EdgeInsets.all(5.0),
+                              child: Image.memory(
+                                base64Decode(imgName),
+                                height: 100,
+                                fit: BoxFit.cover,
+                              ),
                             );
                           }).toList(),
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(
-                              borderSide: const BorderSide(color: Colors.black),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            contentPadding: const EdgeInsets.symmetric(
-                                vertical: 12, horizontal: 12),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: Text(
+                            product['namaProduk'],
+                            style: const TextStyle(
+                                fontSize: 20, fontWeight: FontWeight.bold),
                           ),
                         ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Simulasi Pembayaran:',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: Text(
+                            'Harga: ${formatAmount(product['harga'])}',
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: Text(
+                            product['deskripsi'],
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(5.0),
+                          child: DropdownButtonFormField<int>(
+                            value: selectedJangkaWaktu,
+                            onChanged: (int? newValue) {
+                              setState(() {
+                                selectedJangkaWaktu = newValue!;
+                                hitungCicilan(product['harga']);
+                              });
+                            },
+                            items: List.generate(
+                                    maxLamaCicilan, (index) => index + 1)
+                                .map<DropdownMenuItem<int>>((int value) {
+                              return DropdownMenuItem<int>(
+                                value: value,
+                                child: Text('$value bulan'),
+                              );
+                            }).toList(),
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(
+                                borderSide:
+                                    const BorderSide(color: Colors.black),
+                                borderRadius: BorderRadius.circular(10),
                               ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 12, horizontal: 12),
                             ),
-                            const SizedBox(height: 10),
-                            for (var detail in angsuranDetails)
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Angsuran ke-${detail['bulan']}',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Simulasi Pembayaran:',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              for (var detail in angsuranDetails)
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Angsuran ke-${detail['bulan']}',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(height: 5),
-                                  Text(
-                                    'Total Angsuran: ${formatAmount(detail['totalAngsuran'])}',
-                                    style: const TextStyle(fontSize: 14),
-                                  ),
-                                  Text(
-                                    'Angsuran Bunga:${formatAmount(detail['angsuranBunga'])}',
-                                    style: const TextStyle(fontSize: 14),
-                                  ),
-                                  Text(
-                                    'Angsuran Pokok: ${formatAmount(detail['angsuranPokok'])}',
-                                    style: const TextStyle(fontSize: 14),
-                                  ),
-                                  Text(
-                                    'Saldo Pinjaman: ${formatAmount(detail['saldoPinjaman'])}',
-                                    style: const TextStyle(fontSize: 14),
-                                  ),
-                                  const SizedBox(height: 5),
-                                ],
+                                    const SizedBox(height: 5),
+                                    Text(
+                                      'Total Angsuran: ${formatAmount(detail['totalAngsuran'])}',
+                                      style: const TextStyle(fontSize: 14),
+                                    ),
+                                    Text(
+                                      'Angsuran Bunga:${formatAmount(detail['angsuranBunga'])}',
+                                      style: const TextStyle(fontSize: 14),
+                                    ),
+                                    Text(
+                                      'Angsuran Pokok: ${formatAmount(detail['angsuranPokok'])}',
+                                      style: const TextStyle(fontSize: 14),
+                                    ),
+                                    Text(
+                                      'Sisa Pinjaman: ${formatAmount(detail['saldoPinjaman'])}',
+                                      style: const TextStyle(fontSize: 14),
+                                    ),
+                                    const SizedBox(height: 5),
+                                  ],
+                                ),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: ElevatedButton(
+                            onPressed: () {
+                              if (userData != null &&
+                                  userData!.isNotEmpty &&
+                                  userData![0]['nama'] != null) {
+                                String nama = userData![0]['nama'].toString();
+                                int jangkaWaktu = selectedJangkaWaktu;
+                                beliBarang(nama, jangkaWaktu,
+                                    product['namaProduk'], product['harga']);
+                              } else {
+                                // print('Error: User data is null or empty.');
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
                               ),
-                          ],
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: ElevatedButton(
-                          onPressed: () {
-                            if (userData != null &&
-                                userData!.isNotEmpty &&
-                                userData![0]['nama'] != null) {
-                              String nama = userData![0]['nama'].toString();
-                              int jangkaWaktu = selectedJangkaWaktu;
-                              beliBarang(nama, jangkaWaktu,
-                                  product['namaProduk'], product['harga']);
-                            } else {
-                              // print('Error: User data is null or empty.');
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                              minimumSize: const Size(double.infinity, 40),
                             ),
-                            minimumSize: const Size(double.infinity, 40),
-                          ),
-                          child: const Text(
-                            'Buy Now',
-                            style: TextStyle(fontSize: 15, color: Colors.white),
+                            child: const Text(
+                              'Buy Now',
+                              style:
+                                  TextStyle(fontSize: 15, color: Colors.white),
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  );
-                },
+                      ],
+                    );
+                  },
+                ),
               ),
-            ),
+      ),
     );
   }
 }

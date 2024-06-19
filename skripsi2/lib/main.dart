@@ -32,9 +32,6 @@ class AppNavigator extends StatelessWidget {
     final AuthBloc authBloc = BlocProvider.of<AuthBloc>(context);
     return BlocBuilder<AuthBloc, bool>(
       builder: (context, isLoggedIn) {
-        // if (isLoggedIn) {
-        //   print(authBloc.idAnggota);
-        // }
         return Navigator(
           pages: [
             if (isLoggedIn)

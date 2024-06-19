@@ -48,7 +48,7 @@ class marketplaceScreenState extends State<marketplaceScreen> {
 
   Future<void> getUserData() async {
     final response = await http.post(
-        Uri.parse('http://192.168.1.75/getDataAnggota.php'),
+        Uri.parse('http://172.22.74.201/getDataAnggota.php'),
         body: {'id': id});
     if (response.statusCode == 200) {
       final jsonData = jsonDecode(response.body);
@@ -66,7 +66,7 @@ class marketplaceScreenState extends State<marketplaceScreen> {
 
   Future<List<Map<String, dynamic>>> fetchCategories() async {
     final response =
-        await http.get(Uri.parse('http://192.168.1.75/getCategories.php'));
+        await http.get(Uri.parse('http://172.22.74.201/getCategories.php'));
     if (response.statusCode == 200) {
       final jsonData = jsonDecode(response.body);
       if (jsonData['success']) {
@@ -85,7 +85,7 @@ class marketplaceScreenState extends State<marketplaceScreen> {
 
   Future<void> getProductsData() async {
     final response =
-        await http.get(Uri.parse('http://192.168.1.75/getProducts.php'));
+        await http.get(Uri.parse('http://172.22.74.201/getProducts.php'));
     if (response.statusCode == 200) {
       final jsonData = jsonDecode(response.body);
       if (jsonData['success']) {
@@ -104,7 +104,7 @@ class marketplaceScreenState extends State<marketplaceScreen> {
       String idKategori) async {
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.1.75/getCategories.php'),
+        Uri.parse('http://172.22.74.201/getCategories.php'),
         body: {'idKategori': idKategori},
       );
       if (response.statusCode == 200) {
@@ -199,7 +199,7 @@ class marketplaceScreenState extends State<marketplaceScreen> {
 
   Future<void> getIuran() async {
     final response = await http.post(
-      Uri.parse('http://192.168.1.75/iuran.php'),
+      Uri.parse('http://172.22.74.201/iuran.php'),
     );
 
     if (response.statusCode == 200) {
@@ -283,140 +283,154 @@ class marketplaceScreenState extends State<marketplaceScreen> {
           style: TextStyle(color: Colors.black),
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 20),
-              Row(
-                children: <Widget>[
-                  Expanded(
-                    child: Container(
-                      height: 45,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: const Color.fromRGBO(179, 192, 212, 1),
+      body: PopScope(
+        canPop: false,
+        onPopInvoked: (bool didPop) async {
+          if (didPop) {
+            return;
+          }
+          Navigator.pop(context);
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 20),
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Container(
+                        height: 45,
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: const Color.fromRGBO(179, 192, 212, 1),
+                          ),
+                          borderRadius: BorderRadius.circular(25.0),
                         ),
-                        borderRadius: BorderRadius.circular(25.0),
+                        child: TextField(
+                          controller: _searchController,
+                          decoration: const InputDecoration(
+                            hintText: 'Search products...',
+                            prefixIcon: Icon(Icons.search),
+                            border: InputBorder.none,
+                          ),
+                          onChanged: (value) {
+                            setState(() {});
+                          },
+                        ),
                       ),
-                      child: TextField(
-                        controller: _searchController,
-                        decoration: const InputDecoration(
-                          hintText: 'Search products...',
-                          prefixIcon: Icon(Icons.search),
-                          border: InputBorder.none,
-                        ),
-                        onChanged: (value) {
-                          setState(() {});
+                    ),
+                    const SizedBox(width: 10),
+                    Container(
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.green,
+                      ),
+                      child: IconButton(
+                        icon:
+                            const Icon(Icons.filter_list, color: Colors.white),
+                        onPressed: () {
+                          showCategoryDialog();
                         },
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 10),
-                  Container(
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.green,
-                    ),
-                    child: IconButton(
-                      icon: const Icon(Icons.filter_list, color: Colors.white),
-                      onPressed: () {
-                        showCategoryDialog();
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              if (errorMessage != null)
-                Center(
-                  child: Text(errorMessage!),
-                )
-              else if (productsToDisplay.isEmpty)
-                const Center(
-                  child: Text('no product in this category'),
-                )
-              else
-                GridView.count(
-                  shrinkWrap: true,
-                  crossAxisCount: MediaQuery.of(context).size.width ~/ 160,
-                  childAspectRatio: 0.5,
-                  mainAxisSpacing: 5,
-                  crossAxisSpacing: 5,
-                  children: productsToDisplay.map((product) {
-                    double harga = double.tryParse(product['harga']) ?? 0.0;
-                    int jangkaWaktu = 12;
-                    double monthlyInstallment =
-                        calculateMonthlyInstallment(harga, jangkaWaktu, iuran);
-                    return GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => prodDetailScreen(
-                              id: id,
-                              idProduk: product['idProduk'],
+                  ],
+                ),
+                const SizedBox(height: 20),
+                if (errorMessage != null)
+                  Center(
+                    child: Text(errorMessage!),
+                  )
+                else if (productsToDisplay.isEmpty)
+                  const Center(
+                    child: Text('no product in this category'),
+                  )
+                else
+                  GridView.count(
+                    shrinkWrap: true,
+                    crossAxisCount: MediaQuery.of(context).size.width ~/ 160,
+                    childAspectRatio: 0.5,
+                    mainAxisSpacing: 5,
+                    crossAxisSpacing: 5,
+                    children: productsToDisplay.map((product) {
+                      double harga = double.tryParse(product['harga']) ?? 0.0;
+                      int jangkaWaktu = 12;
+                      double monthlyInstallment = calculateMonthlyInstallment(
+                          harga, jangkaWaktu, iuran);
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => prodDetailScreen(
+                                id: id,
+                                idProduk: product['idProduk'],
+                              ),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Card(
+                            child: Column(
+                              children: [
+                                Image.memory(
+                                  base64Decode(product['imgName']),
+                                  height: 150,
+                                  fit: BoxFit.cover,
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        product['namaProduk']
+                                            .split(' ')
+                                            .take(6)
+                                            .join(' '),
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                        ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        formatAmount(product['harga']),
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                        ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        'Pembayaran / bulan (12 bulan): ${formatAmount(monthlyInstallment)}',
+                                        style: const TextStyle(
+                                          fontStyle: FontStyle.italic,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        );
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey),
-                          borderRadius: BorderRadius.circular(10),
                         ),
-                        child: Card(
-                          child: Column(
-                            children: [
-                              Image.memory(
-                                base64Decode(product['imgName']),
-                                height: 150,
-                                fit: BoxFit.cover,
-                              ),
-                              Container(
-                                padding: const EdgeInsets.all(16),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      product['namaProduk'].split(' ').take(6).join(' '),
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14,
-                                      ),
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      formatAmount(product['harga']),
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                      ),
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      'Pembayaran / bulan (12 bulan): ${formatAmount(monthlyInstallment)}',
-                                      style: const TextStyle(
-                                        fontStyle: FontStyle.italic,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                )
-            ],
+                      );
+                    }).toList(),
+                  )
+              ],
+            ),
           ),
         ),
       ),
