@@ -28,11 +28,10 @@ if ($mysqli->connect_error) {
 // Login
 $email = $_POST['email'] ?? '';
 $password = $_POST['password'] ?? '';
-// $email= 'test1@gmail.com';
-// $password='test4!';
-$sql = "SELECT * FROM anggotakoperasi
-        WHERE email = '$email' AND password = '$password'";
-$result = $mysqli->query($sql);
+$stmt = $mysqli->prepare("SELECT * FROM anggotakoperasi WHERE email = ? AND password = ?");
+$stmt->bind_param("ss", $email, $password);
+$stmt->execute();
+$result = $stmt->get_result();
 
 if ($result->num_rows > 0) {
   $data = array();

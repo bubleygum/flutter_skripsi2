@@ -26,7 +26,6 @@ if ($mysqli->connect_error) {
 }
 
 $id = $_POST['id'] ?? '';
-// $id = 3;
 $sql = "SELECT * FROM notif
         WHERE idAnggota = '$id'";
 $result = $mysqli->query($sql);

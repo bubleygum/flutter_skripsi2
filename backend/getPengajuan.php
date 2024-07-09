@@ -26,7 +26,6 @@ if ($mysqli->connect_error) {
 }
 
 $id = $_POST['id'] ?? '';
-// $id = 3;
 $sql = "SELECT * 
         FROM pengajuan
         WHERE idAnggota = '$id' AND statusPelunasan = 0 AND statusTransfer = 1";
